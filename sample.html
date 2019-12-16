@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<title>Documentation</title>
+		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+		<meta name="description" content="" />
+		<meta name="keywords" content="" />
+		
+		<script src="js/jquery.min.js"></script>
+		<script src="js/skel.min.js"></script>
+		<script src="js/skel-layers.min.js"></script>
+		<script src="js/init.js"></script>
+		<noscript>
+			<link rel="stylesheet" href="css/skel.css" />
+			<link rel="stylesheet" href="css/style.css" />
+			<link rel="stylesheet" href="css/style-xlarge.css" />
+		</noscript>
+	</head>
+	<body>
+
+		
+			<header id="header">
+				<h1><a href="index.html">VM-Interpreter</a></h1>
+				<nav id="nav">
+					<ul>
+						<li><a href="index.html">Home</a></li>
+                        <li><a href="sample.html" >Sample Programs</a></li>
+				
+						<li><a href="tutorial.html">Tutorial</a></li>
+						<li><a href="text.html">Interpreter</a></li>
+						<li><a href="documentation.html" >Documentation</a></li>
+					</ul>
+				</nav>
+			</header>
+		<!-- Main -->
+			<section id="main" class="wrapper">
+				<div class="container">
+
+					<header class="major">
+						<h2>Sample Programs</h2>
+						<p></p>
+					</header>
+                    
+                    
+    <script>
+    function copyToClipboard_textArea() {
+      var copyText = document.getElementById("myInput");
+        copyText.select();
+       document.execCommand("Copy");
+        
+         
+    }
+        
+        function copyToClipboard_textArea2() {
+      var copyText = document.getElementById("myInput2");
+        copyText.select();
+       document.execCommand("Copy");
+            
+        
+        
+         
+    }
+        
+        
+    
+        
+                
+        
+        
+    function copyToClipboard_div() {
+      let textarea = document.createElement('textarea')
+      textarea.id = 't'
+      textarea.style.height = 0
+      document.body.appendChild(textarea)
+      textarea.value = document.getElementById("myInput_div").innerText
+      let selector = document.querySelector('#t')
+      selector.select()
+      document.execCommand('copy')
+      document.body.removeChild(textarea)
+    }
+  </script>
+	<body>
+
+		
+
+		<!-- Main -->
+        <div id="myInput_div" style="background-color:yellow;padding:10px;"><strong>Example 1:</strong> Read a number and print number+1</div>
+<body class="container">
+
+  <div class="jumbotron">
+    <textarea id="myInput" rows="7" cols="50">
+        READ X
+        LOAD X 
+        ADD 1 
+        STORE X 
+        WRITE X 
+        STOP 
+        X 0 </textarea>
+    
+    <button class="btn btn-primary" onclick="copyToClipboard_textArea()">Copy Program</button>
+      
+  </div>
+    
+    
+    <br>
+    
+    
+    <div id="myInput_div" style="background-color:yellow;padding:10px;"><strong>Example 2:</strong> Read 3 numbers, add them and display the total, using 3 variables</div>
+    
+    <div class="jumbotron">
+    <textarea id="myInput2" rows="12" cols="50">
+        READ X 
+        READ Y 
+        READ Z 
+        LOAD X 
+        ADD Y 
+        ADD Z 
+        STORE X 
+        WRITE X 
+        STOP 
+        X 0 
+        Y 0 
+        Z 0 </textarea>
+  
+    <button class="btn btn-primary" onclick="copyToClipboard_textArea2()">Copy Program</button>
+  </div>
+    <br>
+    <div id="myInput_div" style="background-color:yellow;padding:10px;"><strong>Example 3:</strong>Read a number and print it if >= 1</div>
+    <div class="jumbotron">
+    <textarea id="myInput" rows="12" cols="50">
+        READ x
+    In: LOAD x
+        SUB 1
+        BRNEG Out
+        WRITE x
+        LOAD x
+        SUB 1
+        STORE x
+        BR In
+   Out: STOP 
+        x 0</textarea>
+    
+    <button class="btn btn-primary" onclick="copyToClipboard_textArea()">Copy Program</button>
+  </div>
+    
+    <br>
+    
+    <div id="myInput_div" style="background-color:yellow;padding:10px;"><strong>Example 4:</strong>Read first argument, and the read as many arguments as the first argument stated and returns the sum. All integers.</div>
+    <div class="jumbotron">
+    <textarea id="myInput" rows="32" cols="50">
+       READ X
+       COPY Z X
+LOOP1: LOAD X
+       BRZERO OUT1
+       BRNEG OUT1
+       READ Y
+       LOAD Y
+       PUSH
+       STACKW 0
+       LOAD X
+       SUB 1
+       STORE X
+       BR LOOP1
+ OUT1: NOOP
+       LOAD 0
+       STORE Y
+LOOP2: STACKR 0
+       ADD Y
+       STORE Y
+       POP
+       LOAD Z
+       SUB 1
+       BRZERO OUT2
+       BRNEG OUT2
+       STORE Z
+       BR LOOP2
+ OUT2: NOOP
+       WRITE Y
+       STOP
+       X 0
+       Y 0
+       Z 0</textarea>
+   
+    <button class="btn btn-primary" onclick="copyToClipboard_textArea()">Copy Program</button>
+  </div>
+    <br>
+</body>
+
+
+                <footer style="background-color:gray; color:white; text-align:center;">
+    <p style="">Web Application designed by: Sujatha Gopi, Naresh Kshetri, Abinash Konersman &copy 2019</p>
+</footer>
+                
+</html>
