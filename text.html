@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Compile</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="styles/w3.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Amatic+SC">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="styles/codemirror.css">
+    <script src="js/codemirror.js"></script>
+    <script src="js/javascript.js"></script>
+    <script src="js/asmcompiler.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+    <script src="js/syntaxCheck.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <style>
+        textarea {
+            height: 30vh;
+            width: 100%;
+            float:left;
+            margin-bottom: 5px;
+        }
+        .CodeMirror{
+            width: 100% !important;
+        }
+		div#lineNo {
+    display: none;
+}
+    </style>
+
+
+    <style>
+        body, html {
+            height: 100%
+        }
+
+        body, h1, h2, h3, h4, h5, h6 {
+            font-family: FontAwesome, "Amatic SC", sans-serif
+        }
+        .stack-area{
+           <!-- border: 1px solid #b2b2b2; -->
+            height: 300px;
+        }
+
+        .upload-btn-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+            max-width: 100%;
+            height: auto;
+        }
+        #controller{
+            padding-top: 64px;
+        }
+
+        .btn {
+            border: 2px solid gray;
+    color: white;
+    background-color: green;
+    padding: 8px 15px;
+    font-family: FontAwesome;
+    border-radius: 8px;
+    font-size: 18px;
+    font-weight: bold;
+        }
+
+        .upload-btn-wrapper input[type=file] {
+            font-size: 100px;
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+        }
+        #myNavbar{
+            z-index: 1;
+  
+        }
+        #stack{
+            height: 305px;
+            width: 200px;
+            border: 4px solid black;
+
+            display:flex;
+            flex-direction: column-reverse;
+        }
+        .stackItem{
+            width: 193px;
+            height: 50px;
+            background-color: grey;
+            border-top: 2px dashed black;
+            text-align:center;
+            color: black;
+            font-size: 25px;
+        }
+        #editorBox{
+            width: 100%;
+            float:left;
+            margin-bottom: 5px;
+        }
+        #leftTitle, #rightTitle, #middleTitle{
+            display:inline-block;
+        }
+        #leftTitle{
+            margin-left: 1%;
+        }
+        #middleTitle{
+            margin-left: 45%;
+        }
+        #rightTitle{
+            /* margin-left: 20% */
+        }
+        #consoleBox{
+            /* height:300px; */
+            width: 100%;
+        }
+        #compileBtn{
+            width: 215px;
+            height: 50px;
+            border-radius: 5px;
+            font-size: 20px;
+        }
+        #asmBtn, #txtBtn, #comBtn{
+            /* width: 300px; */
+            display:inline-block;
+        }
+        a:hover{
+            text-decoration:none;
+        }
+		.var-area {
+    <!-- border: 1px solid #b2b2b2; -->
+    height: 300px;
+}
+.topnav-right {
+  float: right;
+  font-size: 15px;
+  font-weight: normal;
+  padding: 16px;
+}
+div#comBtn {
+    float: right;
+}
+div#comBtn button {
+    background: green;
+    color: #fff;
+    border: none;
+}
+    </style>
+
+</head>
+<body bgcolor=#F8F8FF>
+
+ Navbar (sit on top) 
+<div class="w3-top w3-hide-small">
+    <div class="w3-bar w3-xlarge w3-black w3-hover-opacity-off"id="myNavbar">
+        <a href="index.html" class="w3-bar-item w3-button"style="font-family: FontAwesome;font-weight: 900;padding: 16px;">VM-Interpreter</a>
+        <div class="topnav-right">
+           <a href="index.html" class="w3-bar-item w3-button"style="font-family: FontAwesome;font-weight:50;">Home</a>
+             <a href="sample.html" class="w3-bar-item w3-button"style="font-family: FontAwesome;font-weight:50;">Sample Program</a>
+           <a href="tutorial.html" class="w3-bar-item w3-button"style="font-family: FontAwesome;">Tutorial</a>
+           <a href="text.html" class="w3-bar-item w3-button"style="font-family: FontAwesome;">Interpreter</a>
+           <a href="documentation.html" class="w3-bar-item w3-button"style="font-family: FontAwesome;">Documentation</a>
+        </div>
+    </div>
+</div> 
+
+<!-- Profile Page container-->
+<div class="w3-row" id="controller">
+        <div class="w3-full w3-container">
+                <div class="upload-btn-wrapper"  id ="txtBtn">
+                        <button class="btn" onclick="downloadfile('txt')">Download as .txt <img src='./images/download.png'style="font-family: FontAwesome;height: 20px;padding-left: 10%;"></button>
+                    </div>
+                    <div class="upload-btn-wrapper" id="asmBtn">
+                        <button  class="btn" onclick="downloadfile('asm')">Download as .asm <img src='./images/download.png'style="font-family: FontAwesome;height: 20px;padding-left: 10%;"></button>
+                    </div>
+                    <div class="upload-btn-wrapper">
+                            <button class="btn">Upload a file to compile...<img src='./images/upload.png'style="font-family: FontAwesome;height: 20px;padding-left: 10%;"></button>
+                            <input type="file" accept=".txt,.asm" name="myfile" onchange="uploadfile(this)"/>
+                        </div>
+						
+                        <div class="upload-btn-wrapper" id="comBtn">
+                            <button class="btn" id='stepby' type="submit" value="Compile" onclick="stepbystep();" >Step By Step Execution <img src='./images/right.png'style="font-family: FontAwesome;height: 20px;padding-left: 10%;"></button>
+                        </div>
+                        <div class="upload-btn-wrapper" id="comBtn" style="margin-right: 1%;" >
+                            <button class="btn" type="submit" value="Compile" onclick="compilerclick()" > Execute <img src='./images/right.png'style="font-family: FontAwesome;height: 20px;padding-left: 10%;"></button>
+                        </div>
+						
+                        <div class="upload-btn-wrapper" id="comBtn" style="margin-right: 1%;">
+                           <!-- <button class="btn" type="button" value="Compile" onclick="location.reload();" >Refresh <img src='./images/refresh.png'style="height: 20px;padding-left: 10%;"></button> -->
+                             <button class="btn" type="button" onclick="javascript:eraseText();" >Refresh <img src='./images/refresh.png'style="font-family: FontAwesome;height: 20px;padding-left: 10%;"></button> 
+                        </div>
+        </div>
+        <!-- <div class="w3-half w3-container">
+
+        </div> -->
+      </div>
+<div class="w3-container  w3-large" id="#">
+        <div  class="w3-col" style="width:100%">
+
+              <!--
+                <div class="upload-btn-wrapper">
+                    <input id="compileBtn" type="submit" value="Compile" onclick="fds()">
+                </div><br>
+
+                -->
+
+            </div>
+    <!-- <div class="w3-content">
+        <h1 class="w3-center" style="margin-bottom:15px">
+            <span class="w3-text-black w3-hide-small" style="font-size:70px">SAZO'S COMPILER<br></span>
+        </h1>
+
+    </div> -->
+    <!-- <span id="leftTitle" class="w3-text-black w3-hide-small" style="font-size:35px">Editor<br></span> -->
+
+    <!-- <span id= "middleTitle" class="w3-text-black w3-hide-small" style="font-size:35px">Stdin</span> -->
+
+        <div id="id01" class="w3-modal">
+            <div class="w3-modal-content" style="font-family: FontAwesome, times, sans-serif, serif;">
+                <div class="w3-row">
+                    <div class="w3-third w3-container">
+                        <span onclick="document.getElementById('id01').style.display='none'" class="w3-button w3-display-topright">&times;</span>
+                        <br><b>ADD arg</b><br>
+                        Adds to the accumulator by the amount of arg.<br><br>
+
+                        <b>BR arg</b><br>
+                        Jumps to the branch with the label named in arg.<br><br>
+
+                        <b>BRNEG arg</b><br>
+                        Jumps to the branch with the label named in arg if Accumulator is less than zero.<br><br>
+
+                        <b>BRZNEG arg</b><br>
+                        Jumps to the branch with the label named in arg if Accumulator is less than or equal to zero.<br><br>
+
+                        <b>BRPOS arg</b><br>
+                        Jumps to the branch with the label named in arg if Accumulator is more than zero.<br><br>
+
+                        <b>BRZPOS arg</b><br>
+                        Jumps to the branch with the label named in arg if Accumulator is more than or equal to zero.<br><br>
+
+                        <b>BRZERO arg</b><br>
+                        Jumps to the branch with the label named in arg if Accumulator is equal to zero.<br><br>
+                    </div>
+                    <div class="w3-third w3-container">
+                        <br><b>COPY arg1 arg2</b><br>
+                        Copies the value of arg2 into arg1. <br><br>
+
+                        <b>DIV arg</b><br>
+                        Divides the accumulator by the amount of arg.<br><br>
+
+                        <b>MULT arg</b><br>
+                        Multiplies the accumulator by the amount of arg. <br><br>
+
+
+                        <b>READ arg</b><br>
+                        Reads input and stores it to arg.<br><br>
+
+                        <b>WRITE arg</b><br>
+                        Writes the value of arg to output.<br><br>
+
+                        <b>STOP</b><br>
+                        Stops the program entirely.<br><br>
+
+                        <b>STORE arg</b><br>
+                        Stores the value of the Accumulator into arg.<br><br>
+
+                        <br>
+                        <b>SUB arg</b><br>
+                        Subtracts from the accumulator by the amount of arg.<br><br>
+                    </div>
+                    <div class="w3-third w3-container">
+                       <br> <b>NOOP</b><br>
+                        Do nothing.<br><br>
+
+                        <b>LOAD arg</b><br>
+                        Stores the value of arg into the Accumulator.<br><br>
+
+                        <b>PUSH</b><br>
+                        Allocates a new element to the stack.<br><br>
+
+                        <b>POP</b><br>
+                        Deallocate the top of stack.<br><br>
+
+
+                        <b>READ arg</b><br>
+                        Stores the value of the Accumulator into the arg'th element down the stack.<br><br>
+
+                        <b>STACKR arg</b><br>
+                        Stores the value of the arg'th element down the stack into the Accumulator.<br><br>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+    <!--     <div id="stack">
+           <div class="stackItem">sample 1</div>
+           <div class="stackItem">sample 2</div>
+           <div class="stackItem">sample 3</div>
+       </div> -->
+
+    <!--        <h1 class="w3-center" style="margin-bottom:15px">-->
+    <!--            <span class="w3-text-black w3-hide-small" style="font-size:70px">Compile<br></span>-->
+    <!--        </h1>-->
+
+
+    <!-- Editor -->
+
+        <div class="w3-row">
+
+     <div class="w3-container w3-third	">
+        
+    <div>
+            <span id= "rightTitle" class="w3-text-black w3-hide-small" style="font-family: FontAwesome;font-size:35px">Editor<br></span>
+            <button onclick="document.getElementById('id01').style.display='block'"  class="w3-button" style="font-family: FontAwesome;font-size:15px">Instructions <i class="fa fa-question-circle" aria-hidden="true"></i></button>
+
+    </div>
+        <div id="editorBox" oninput="syntaxCheck()" onkeyup="backspaceCheck(editor, event)">
+            <!-- Editor box -->
+            <textarea id="code" name="code">
+
+READ X 
+PUSH 
+LOAD X 
+STACKW 0 
+READ Y 
+PUSH 
+LOAD Y
+STACKW 0 
+READ Z 
+PUSH 
+LOAD Z
+STACKW 0 
+ADD X 
+ADD Y 
+STORE X 
+WRITE X 
+STOP 
+X 0
+Y 0
+Z 0</textarea>
+        </div>
+    </div> 
+
+
+<!-- New placement of Input block -->
+<div class="w3-container w3-third">
+        <div id="write">
+                <span id= "rightTitle" class="w3-text-black w3-hide-small" style="font-family: FontAwesome; font-size:35px">Input<br></span>
+<textarea id ="stndin" style="background-color: white ;color: black; font-family: FontAwesome, monospace; width: 100%; display:inline-block; resize:none;margin-right: 50px;" placeholder="Enter your standard input here.." onkeyup="getLineNumber(this, document.getElementById('lineNo'));" onmouseup="this.onkeyup();"
+></textarea>
+<textarea id="step_stndin" readonly style="background-color: white ;color: black; font-family: FontAwesome; width: 100%; display:inline-block; resize:none;margin-right: 50px;display:none;" placeholder="Enter your standard input here.." onkeyup="getLineNumber(this, document.getElementById('lineNo'));" onmouseup="this.onkeyup();"
+></textarea>
+<div id="lineNo"></div>
+        </div>
+    </div>
+<!-- New placement of Input block -->
+
+<!-- New placement of output block -->
+<div class="w3-container w3-third">
+            <div>
+                    <span id= "rightTitle" class="w3-text-black w3-hide-small" style="font-family: FontAwesome;font-size:35px">Output<br></span>
+                <textarea readonly id="consoleBox" type="text" style="color:black; width: 100%; font-family: monospace; resize:none; font-weight: bold; font-size: 15px; background-color: white;"
+                          size = "300px" name="consoleData" rows="10" cols="50">  </textarea>
+						  <!--<p style='color:red;font-weight:bold;'>To Next Programme Click Refresh Button</p>-->
+            </div>
+    </div>
+
+<!-- New placement of output block -->
+
+
+    <!--End of editor-->
+</div>
+<div class="w3-row">
+
+
+<!-- New placement of Stack Area -->
+<div class="w3-container w3-third">
+          <!--  <h2 style="font-family: FontAwesome; margin-top: 0px;margin-bottom: 18px;">Stack Area</h2> -->
+            <span id= "rightTitle" class="w3-text-black w3-hide-small" style="font-family: FontAwesome; font-size:35px">Stack Area<br></span>
+        <div class="stack-area">
+          <textarea readonly id="stackArea" type="text" style="color:blue; height: 50%; width: 70%; font-family: FontAwesome, monospace; resize:none; font-weight: bold; font-size: 15px; background-color: white; overflow: scroll"
+                          size = "300px" name="stackData" rows="10" cols="50">  </textarea>        
+
+        </div>
+
+    </div>
+<!-- New placement of Stack Area -->
+
+<!-- New placement of VAR Area -->
+<div class="w3-container w3-third">
+          <!--  <h2 style="font-family: FontAwesome; margin-top: 0px;margin-bottom: 18px;">VAR Area</h2> -->
+            <span id= "rightTitle" class="w3-text-black w3-hide-small" style="font-family: FontAwesome; font-size:35px">VAR Area<br></span>
+        <div class="var-area">
+          <textarea readonly id="varData" type="text" style="color:blue; height: 50%; width: 70%; font-family: FontAwesome; resize:none; font-weight: bold; font-size: 15px; background-color: white;"
+                          size = "300px" name="varData" rows="10" cols="50">  </textarea>        
+
+        </div>
+
+    </div>
+<!-- New placement of VAR Area -->
+
+
+<!-- New placement of Accumulator -->
+<div class="w3-container w3-third">
+        <div id="write">
+                <span id= "rightTitle" class="w3-text-black w3-hide-small" style="font-family: FontAwesome; font-size:35px">Accumulator<br></span>
+            <textarea id ="stnacc" style="background-color: #fff ;color: blue; font-family: monospace; width: 70%; display:inline-block; resize:none;margin-right: 50px;" readonly></textarea>
+        </div>
+    </div>
+
+<!-- New placement of Accumulator -->
+
+        </div>
+</div>
+<script>
+var editor = CodeMirror.fromTextArea(document.getElementById("code"), {
+        lineNumbers: true,
+        matchBrackets: true,
+        continueComments: "Enter",
+        extraKeys: {"Ctrl-Q": "toggleComment"}
+});
+editor.on("change", function() {
+$('#stndin').val('');
+$('#stackArea').val('');
+$('#varData').val('');
+$('#stnacc').val('');
+$('#consoleBox').val('');
+var etext = editor.getValue();
+$("#code").val(etext);
+});
+    var labelIndex = -1;
+    var lineIndex = 0;
+    var syntaxCheckFlag = 0;
+    function uploadfile(input) {
+        var reader = new FileReader();
+        reader.onload = function (e) {
+            editor.setValue(e.target.result);
+        }
+        reader.readAsText(input.files[0]);
+    }
+
+    function downloadfile(extension)
+    {
+        var text = editor.getValue();
+        text = text.replace(/\n/g, "\r\n")
+        var fileBlob = new Blob([text], {type: "text/plain"});
+        var fileName = "editor." + extension;
+
+        var link = document.createElement("a");
+        link.download = fileName;
+        link.innerHTML = "Download Editor Content";
+
+        window.URL = window.URL || window.webkitURL;
+        link.href = window.URL.createObjectURL(fileBlob);
+        link.onclick = removeClickElement;
+        link.style.display = "none";
+
+        document.body.appendChild(link);
+        link.click();
+    }
+
+    function removeClickElement(e)
+    {
+        document.body.removeChild(e.target);
+    }
+
+    function eraseText()
+    {
+   
+      //document.getElementById("stackArea").value = "";
+      //document.getElementById("stndin").value = "";
+      //document.getElementById("varData").value = "";
+      //document.getElementById("stnacc").value = "";
+      //document.getElementById("consoleBox").value = "";
+
+      $('#stndin').val('');
+      $('#step_stndin').val('');
+      $('#stackArea').val('');
+      $('#varData').val('');
+      $('#stnacc').val('');
+      $('#consoleBox').val('');
+
+    }
+
+    function fds()
+    {
+        //var stdin = document.getElementById("stndin");
+        //stdin = stdin.value;
+	   
+		var arrayOfLines = $('#stndin').val().split('\n');
+		var stdin="";
+		$.each(arrayOfLines, function(index, item) {
+		if(index%2!=0)
+		{
+		stdin +=item+"\n";
+		}
+		});
+		
+
+		//alert(stdin);
+        clearElements();
+        var VARS=stdin;
+        console.log("Input:" + stdin);
+        getInput(stdin);
+        lineIndex = 0;
+        labelIndex = -1;
+        var stopFlag = false;
+        var strline;
+        while(lineIndex < editor.lineCount())
+        {
+            strline = editor.getLine(lineIndex).trim().split(/(\s+)/).filter( e => e.trim().length > 0);
+                        
+            if(strline.length > 0)
+            {
+                addBranchLabel(strline, lineIndex);
+            }
+            if(strline.indexOf("STOP") !== -1)
+            
+                stopFlag = true;
+                         
+            else if(stopFlag && strline.length > 0)
+            {
+                addVar(strline);
+               
+            }
+            lineIndex++;
+            if(ERRORS.length > 0)
+            {
+                document.getElementById("consoleBox").innerHTML = ERRORS.join("\n");
+                return;
+            }
+        }
+        stopFlag = false;
+        lineIndex = 0;
+        while(lineIndex < editor.lineCount())
+        {
+            strline = editor.getLine(lineIndex).trim().split(/(\s+)/).filter( e => e.trim().length > 0);
+
+            //if nonempty string and first element is a label, splice off the label
+            if(!(!strline.join("").trim() || strline.join("").length === 0) && strline[0].charAt(strline[0].length - 1) === ':')
+            {
+                strline.splice(0, 1);
+            }
+            if(strline.indexOf("STOP") !== -1)
+                stopFlag = true;
+            if(!stopFlag && !(!strline.join("").trim() || strline.join("").length === 0))
+            {
+        
+               parseFunction(strline);
+                
+            }
+
+            if(labelIndex > -1)
+            {
+                lineIndex = labelIndex;
+                labelIndex = -1;
+            }
+            else
+            {
+                lineIndex++;
+            }
+            if(ERRORS.length > 0)
+            {
+                document.getElementById("consoleBox").innerHTML = ERRORS.join("\n");
+                return;
+            }
+        }
+
+console.log("VARS = " + VARS);
+console.log("STACK = " + STACK);
+console.log("BRANCHES = " + BRANCHES);
+console.log("ACC = " + ACC);
+var STACKREVERSE = STACK.reverse();
+$('#consoleBox').val(STDOUT.join("\n"));
+$('#stackArea').val(STACKREVERSE.join("\n"));
+$('#varData').val(VARS);
+$('#stnacc').val(ACC);
+console.log(STACK);
+}
+    function compilerclick(){
+	$("#step_stndin").hide();
+	$("#stndin").show();
+	if($("#stndin").val()==''){
+	$('#stndin').val('ENTER THE VALUE 1: \n');
+	$('#stndin').focus();
+	}else{
+	compilerCheck();
+	}
+	}
+
+function stepbystep(){
+$("#stndin").hide();
+$("#step_stndin").show();
+var linee=document.getElementById('step_stndin').value.substr(0, document.getElementById('step_stndin').selectionStart).split("\n").length;
+
+var vnum=(parseInt(linee)+1)/2;
+var code = $.trim($("#code").val()); 
+var inputval = code.split("READ") 
+var inputlength=inputval.length-1;
+
+var arrayOfLines = $('#step_stndin').val().trim().split('\n');
+if($("#step_stndin").val()==''){
+var valll = prompt('Command : READ - ENTER THE VALUE 1', "");
+if (valll == null || valll == "") {
+$('#step_stndin').val('');
+} else {
+var nn=parseInt(rnum)+1;
+$('#step_stndin').val('ENTER THE VALUE 1:\n'+valll);
+$('#stndin').val($('#step_stndin').val());
+//stepbystep();
+var arrayOfLines = $('#stndin').val().split('\n');
+var sdtdin="";
+$.each(arrayOfLines, function(index, item) {
+if(index%2!=0)
+{
+sdtdin +=item+"\n";
+}
+});
+fds();
+var STACKREVERSE = STACK.reverse();
+$('#consoleBox').val(STDOUT.join("\n"));
+$('#stackArea').val(STACKREVERSE.join("\n"));
+$('#varData').val(sdtdin);
+$('#stnacc').val(ACC);
+}
+//$('#step_stndin').val('ENTER THE VALUE 1: \n');
+$('#step_stndin').focus();
+}else if(linee<inputlength*2){
+var arrayOfLines = $('#step_stndin').val().trim().split('\n');
+var stdin="";
+$.each(arrayOfLines, function(index, item) {
+if(index>linee)
+{
+return false;
+}else{
+stdin +=item+"\n";
+}
+});
+var rnum=Math.round(vnum);
+var valll = prompt('Command : READ - ENTER THE VALUE '+rnum, "");
+if (valll == null || valll == "") {
+$('#step_stndin').val(stdin);
+$('#stndin').val(stdin);
+} else {
+$('#step_stndin').val(stdin+'ENTER THE VALUE '+rnum+':\n'+valll);
+var newlength = $('#step_stndin').val().trim().split('\n');
+if(newlength.length>=inputlength*2){
+$('#step_stndin').val($('#step_stndin').val()+"\nNOW Executing...");
+$('#stndin').val($('#step_stndin').val());
+fds();
+}else{
+$('#stndin').val($('#step_stndin').val());
+fds();
+var arrayOfLines = $('#stndin').val().split('\n');
+var sdtdin="";
+$.each(arrayOfLines, function(index, item) {
+if(index%2!=0)
+{
+sdtdin +=item+"\n";
+}
+});
+var STACKREVERSE = STACK.reverse();
+$('#consoleBox').val(STDOUT.join("\n"));
+$('#stackArea').val(STACKREVERSE.join("\n"));
+$('#varData').val(sdtdin);
+$('#stnacc').val(ACC);
+//stepbystep();
+}
+}
+$('#step_stndin').focus();
+}else if(linee==inputlength*2){
+var arrayOfLines = $('#step_stndin').val().trim().split('\n');
+var stdin="";
+$.each(arrayOfLines, function(index, item) {
+var vl=(inputlength*2)-1;
+if(vl==index){
+stdin +=item+"\nNOW Executing...";
+}else{
+stdin +=item+"\n";
+}
+});
+$('#step_stndin').val(stdin);
+$('#stndin').val($('#step_stndin').val());
+fds();
+}
+}
+    function compilerCheck(){
+        if(syntaxCheckFlag === 0){
+            fds();
+        }
+        else{
+            console.log("ERRORS exist");
+        }
+    }
+    function debug(){
+        jQuery.trigger({ type: 'keypress', which: '123'});
+    }
+
+    function syntaxCheck() {
+        clearElements2();
+        syntoCheck(editor);
+        if(ERRORS.length > 0) {
+            //document.getElementById("consoleBox").innerHTML = ERRORS.join("\n");
+            $('#consoleBox').val(ERRORS.join("\n"));
+            //disable compile button
+        }
+        else{
+            document.getElementById("consoleBox").innerHTML = "";
+            //enable compile button
+        }
+    }
+
+</script>
+<script>
+function getLineNumber(textarea, indicator) {
+var etext = editor.getValue();
+$("#code").val(etext);
+//alert($("#code").val());
+if(textarea.value.substr(0, textarea.selectionStart).split("\n").length==1){
+$('#stndin').val('ENTER THE VALUE 1: \n');
+}else if(textarea.value.substr(0, textarea.selectionStart).split("\n").length==3){
+$('#stndin').val($('#stndin').val().trim()+'\n');
+}else if(textarea.value.substr(0, textarea.selectionStart).split("\n").length==5){
+$('#stndin').val($('#stndin').val().trim()+'\n');
+}
+indicator.innerHTML = textarea.value.substr(0, textarea.selectionStart).split("\n").length;
+}
+function setLine(textarea, indicator) {
+var linee=textarea.value.substr(0, textarea.selectionStart).split("\n").length;
+var vnum=(parseInt(linee)+1)/2;
+
+var code = $.trim($("#code").val()); 
+//split a string into an array of substrings 
+var inputval = code.split("READ") 
+// count number of elements 
+var inputlength=inputval.length-1;
+
+if(linee%2!=0 && linee<inputlength*2)
+{
+$('#stndin').val($('#stndin').val().trim()+'\nENTER THE VALUE '+vnum+': \n');
+}else if(linee>inputlength*2){
+//console.log('h');
+fds();
+//$("#comBtn").find('button').trigger('click');
+}
+indicator.innerHTML = textarea.value.substr(0, textarea.selectionStart).split("\n").length;
+}
+$(document).ready(function(){
+$("#stndin").keyup(function(e) {
+var tlen=this.value.substr(0, this.selectionStart).split("\n").length;
+
+var arrayOfLines = $('#stndin').val().split('\n');
+var sdtdin="";
+$.each(arrayOfLines, function(index, item) {
+if(index%2!=0)
+{
+sdtdin +=item+"\n";
+}
+});
+
+var codee = $.trim($("#code").val()); 
+//split a string into an array of substrings 
+var inputval = codee.split("READ") 
+// count number of elements 
+var inputlength=inputval.length-1;
+if(tlen>inputlength*2){
+var arrayOfLines = $('#stndin').val().split('\n');
+var stdin="";
+$.each(arrayOfLines, function(index, item) {
+if(index<inputlength*2)
+{
+var vl=(inputlength*2)-1;
+if(vl==index){
+stdin +=item+"\nNOW Executing...";
+}else{
+stdin +=item+"\n";
+}
+}
+});
+$('#stndin').val(stdin);
+var Nn = stdin.search("Executing");
+if(Nn>=0){
+fds();
+}
+e.preventDefault();
+}
+var code = e.keyCode ? e.keyCode : e.which;
+if (code == 13) {  // Enter keycode
+setLine(this, document.getElementById('lineNo'));
+}
+});
+});
+</script>
+
+</body>
+<!-- Footer -->
+<footer style="background-color:gray; color:white; text-align:center;font-family: FontAwesome;font-size:10px">
+    <p style="">Web Application designed by: Sujatha Gopi, Abinash Konersman, Naresh Kshetri &copy 2019</p>
+</footer>
+</html>
